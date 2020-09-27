@@ -1,0 +1,57 @@
+---
+title: "p8105_hw2_hy2669"
+author: "Haoyang Yi"
+date: "2020/9/27"
+output: github_document
+---
+## Problem 1
+```{r}
+library(tidyverse)
+library(readxl)
+trashwheel=read_xlsx('./problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet='Mr. Trash Wheel',
+                      range=cell_cols("A:N")) %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>%
+  mutate(sports_balls=round(sports_balls),
+         sports_balls=as.integer(sports_balls)) # there are 14 observations
+#read precipitation of 2017 and 2018 separately
+precip_2018=read_xlsx('./problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet='2018 Precipitation',skip = 1) %>%
+  janitor::clean_names() %>%
+  drop_na(month) %>%
+  mutate(year=2018) %>%
+  relocate(year)
+
+precip_2017=read_xlsx('./problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet='2017 Precipitation',skip = 1) %>%
+  janitor::clean_names() %>%
+  drop_na(month) %>%
+  mutate(year=2017) %>%
+  relocate(year)
+# combine annual precipitation
+month_df=tibble(month=1:12,
+                month_name=month.name)
+precip_df=bind_rows(precip_2018,precip_2017)
+left_join(precip_df,month_df,by='month') 
+
+precip_df %>%
+  filter(year==2018) %>%
+  mutate(sum=sum(total)) 
+  
+trashwheel %>%
+  filter(year==2017) %>%
+  mutate(median=median(sports_balls))
+# # There are 4 observations in precipitation dataset for 2017 and 2018.There are 14 observations in Mr.Trash Wheel sheet dataset. The total precipitation in 2018 is 70.33. The median number of sports balls in a dumpster in 2017 is 8.
+```
+
+## Problem 2
+```{r}
+summary(cars)
+```
+
+## Problem 3
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
