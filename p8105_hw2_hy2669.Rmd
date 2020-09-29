@@ -8,99 +8,101 @@ output: github_document
 library(tidyverse)
 library(readxl)
 ```
+
 ## Problem 1
 ```{r}
-trashwheel=read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
-                      sheet='Mr. Trash Wheel',
-                      range=cell_cols("A:N")) %>%
-  janitor::clean_names() %>%
+trashwheel = read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet = 'Mr. Trash Wheel',
+                      range = cell_cols("A:N")) 
+trashwheel = janitor::clean_names(trashwheel) %>%
   drop_na(dumpster) %>%
-  mutate(sports_balls=round(sports_balls)) %>%
-  mutate(sports_balls=as.integer(sports_balls)) %>%
-  print()# there are 14 observations
+  mutate(sports_balls = round(sports_balls)) %>%
+  mutate(sports_balls = as.integer(sports_balls)) %>%
+  print() # there are 14 observations
 # read precipitation of 2017 and 2018 separately
-precip_2018=read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
-                      sheet='2018 Precipitation',skip = 1) %>%
+precip_2018 = read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet = '2018 Precipitation',skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month) %>%
-  mutate(year=2018) %>%
+  mutate(year = 2018) %>%
   relocate(year)
 
-precip_2017=read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
-                      sheet='2017 Precipitation',skip = 1) %>%
+precip_2017 = read_xlsx('./data/problem1/Trash-Wheel-Collection-Totals-8-6-19.xlsx',
+                      sheet ='2017 Precipitation',skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month) %>%
-  mutate(year=2017) %>%
+  mutate(year = 2017) %>%
   relocate(year)
 # combine annual precipitation
-month_df=tibble(month=1:12,
-                month_name=month.name)
-precip_df=bind_rows(precip_2018,precip_2017)
-left_join(precip_df,month_df,by='month') 
+month_df = tibble(month = 1:12,
+                month_name = month.name)
+precip_df = bind_rows(precip_2018,precip_2017)
+left_join(precip_df,month_df,by ='month') 
 
-sum(precip_df$total[precip_df$year==2018])
-median(trashwheel$sports_balls[trashwheel$year==2017])
-# There are 4 observations in precipitation dataset for 2017 and 2018.There are 14 observations in Mr.Trash Wheel sheet dataset. 
-# The total precipitation in 2018 is 70.33. The median number of sports balls in a dumpster in 2017 is 8.
+sum(precip_df$total[precip_df$year == 2018])
+median(trashwheel$sports_balls[trashwheel$year == 2017])
 ```
+  There are 4 observations in precipitation dataset for 2017 and 2018.There are 14 observations in Mr.Trash Wheel sheet dataset. The total precipitation in 2018 is `r sum(precip_df$total[precip_df$year==2018])`. The median number of sports balls in a dumpster in 2017 is `r median(trashwheel$sports_balls[trashwheel$year==2017])`.
 
 ## Problem 2
 ```{r}
-nyc_transit_df=read_csv('./data/problem2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv')  
-  nyc_transit_df=janitor::clean_names(nyc_transit_df) %>% 
-  select(line,station_name,station_latitude,station_longitude,route1:route11,entry,vending,entrance_type, ada) %>%
-  mutate(entry=recode(entry,"YES"="TRUE","NO"="FALSE")) %>%
-  mutate(entry=as.logical(entry)) 
+nyc_transit_df = read_csv('./data/problem2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv')  
+  nyc_transit_df = janitor::clean_names(nyc_transit_df) %>% 
+  select(line,station_name,station_latitude,station_longitude,
+         route1:route11,entry,vending,entrance_type, ada) %>%
+  mutate(entry = recode(entry,"YES"="TRUE","NO"="FALSE")) %>%
+  mutate(entry = as.logical(entry)) 
   str(nyc_transit_df)
-# This dataset contains information of stations including names,locations,routes they serve,entrance type, ADA compliance,entry and vending status. 
-# Data cleaning steps: read the data-clean the name-select columns to retain-convert the entry variable from character to logical.The resulting dataset has 19 colums and 1868 rows.
-# These data are not tidy since there are too many route columns, and route1:route7 are character variables while route8:route11 are numeric variables.
+``` 
+   This dataset contains information of stations including names,locations,routes they serve,entrance type, ADA compliance,entry and vending status. 
+  Data cleaning steps: read the data-clean the name-select columns to retain-convert the entry variable from character to logical.The resulting dataset has `r ncol(nyc_transit_df)` columns and `r nrow(nyc_transit_df)` rows.These data are not tidy since there are too many route columns, and route1:route7 are character variables while route8:route11 are numeric variables.
+  
+```{r}   
   nyc_station<-distinct(nyc_transit_df,station_name,line) # get distinct stations based on name and line.
   nrow(nyc_station)# there are 465 distinct stations.
   count(nyc_transit_df,ada) # 468 stations are ADA compliant.
-  nyc=filter(nyc_transit_df,vending=='NO') # station without vending 
-  nycentry=filter(nyc,entry==TRUE) # station without vending allow entrance
+  nyc = filter(nyc_transit_df,vending =='NO') # station without vending 
+  nycentry = filter(nyc,entry == TRUE) # station without vending allow entrance
   nrow(nycentry)/nrow(nyc) # the proportion = number of stations without vending allow entrance/ total number of stations without vending = 0.377
-  
-  nyc_tidy_df= nyc_transit_df %>%
+  nyc_tidy_df = nyc_transit_df %>%
   mutate_at(vars(route1:route11),as.character) %>%
-  pivot_longer(route1:route11,names_to='route_name',names_prefix='route',
-               values_to='route_number') %>%
+  pivot_longer(route1:route11,names_to ='route_name',names_prefix ='route',
+               values_to ='route_number') %>%
   drop_na(route_number) %>%
   print() # Reformat the data so that the route number and route name are distinct variables
-  a_df<-filter(nyc_tidy_df,route_number=='A')
+  a_df<-filter(nyc_tidy_df,route_number =='A')
   nrow(distinct(a_df,station_name,line)) # there are 60 distinct stations serve the A train
-  ada_df=filter(a_df,ada=='TRUE')
+  ada_df = filter(a_df,ada =='TRUE')
   nrow(distinct(ada_df,station_name,line)) # Of the stations that serve the A train,17 are ADA compliant
 ```
 
 ## Problem 3
 ```{r}
-pols_month_df=read_csv('./data/problem3/pols-month.csv') 
-  pols_month_df=separate(pols_month_df,mon,into=c('year','month','day')) %>%
-  mutate(month=month.abb[as.factor(month)]) %>% # replace month number with month name
-  mutate(president=recode(prez_gop,'0'='dem','1'='gop','2'='abnormal')) %>% 
-  mutate(year=as.integer(year)) %>%  # convert year variable to integer 
-  select(-prez_dem,-prez_gop,-day) # separate mon into year month and day. Create president variable to show the party that the president belongs. remove prez_dem, prez_gop and day variables
-snp_df=read_csv('./data/problem3/snp.csv')
-  snp_df=separate(snp_df,date,into=c('month','day','year')) %>%
-  arrange(year,month) %>% # arrange according to year and month
-  mutate(month=month.abb[as.factor(month)]) %>% 
-  mutate(year=as.integer(year)) %>% 
-  select(year,month,close)  # clean and tidy the data in snp.csv,organize columns.
-unemployment_df=read_csv('./data/problem3/unemployment.csv')
-  unemployment_df=pivot_longer(unemployment_df,Jan:Dec,names_to = 'month',values_to = 'rate of unemployment') %>%
-  rename(year=Year) # switch the unemployment dataset to 'long',rename the Year variable to year according to name of variable in pols_month and snp datasets.
-  
-two_df=left_join(pols_month_df,snp_df) 
-final_df=left_join(two_df,unemployment_df) # first, merge snp into pols, then merge unemployment in to the previous result.
-
-# The pols dataset contains numbers of republican and democratic national politicians on associated date. 
-# The snp dataset contains closing values fo S&P stock index on the associated date. 
-# The unemployment dataset contains percentage of unemployment in each month of the associated year.
-
-# The dimension of the resulting dataset is 822 rows and 11 columns. The range of years is 1947-2015. 
-# Key variables are president(republican or democratic), numbers of republican and democratic governors,senators and representatives, closing values of S&P stock index, precentage of unemployment.
-skimr::skim(final_df)
+pols_month_df = read_csv('./data/problem3/pols-month.csv') 
+snp_df = read_csv('./data/problem3/snp.csv')
+unemployment_df = read_csv('./data/problem3/unemployment.csv')
 ```
+```{r}
+  pols_month_df = separate(pols_month_df,mon,into = c('year','month','day')) %>%
+  mutate(month = month.abb[as.factor(month)]) %>% # replace month number with month name
+  mutate(president = recode(prez_gop,'0'='dem','1'='gop','2'='abnormal')) %>% 
+  mutate(year = as.integer(year)) %>%  # convert year variable to integer 
+  select(-prez_dem,-prez_gop,-day) # separate mon into year month and day. 
+# Create president variable to show the party that the president belongs. remove prez_dem, prez_gop and day variables
+  snp_df = separate(snp_df,date,into=c('month','day','year')) %>%
+  arrange(year,month) %>% # arrange according to year and month
+  mutate(month = month.abb[as.factor(month)]) %>% 
+  mutate(year = as.integer(year)) %>% 
+  select(year,month,close)  # clean and tidy the data in snp.csv,organize columns.
+  unemployment_df = pivot_longer(unemployment_df,Jan:Dec,names_to = 'month',
+                                 values_to = 'rate of unemployment') %>%
+  rename(year = Year) # switch the unemployment dataset to 'long'
+  # rename the Year variable to year according to name of variable in pols_month and snp datasets.
+two_df = left_join(pols_month_df,snp_df) 
+final_df = left_join(two_df,unemployment_df) # first, merge snp into pols, then merge unemployment in to the previous result.
+```
+  The pols dataset contains numbers of republican and democratic national politicians on associated date.The snp dataset contains closing values fo S&P stock index on the associated date. The unemployment dataset contains percentage of unemployment in each month of the associated year.
+  `r skimr::skim(final_df)`
+  The dimension of the resulting dataset is 822 rows and 11 columns. The range of years is 1947-2015. Key variables are president(republican or democratic), numbers of republican and democratic governors,senators and representatives, closing values of S&P stock index, precentage of unemployment.
+
 
