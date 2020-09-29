@@ -59,8 +59,9 @@ nyc_transit_df=read_csv('./data/problem2/NYC_Transit_Subway_Entrance_And_Exit_Da
   nyc_station<-distinct(nyc_transit_df,station_name,line) # get distinct stations based on name and line.
   nrow(nyc_station)# there are 465 distinct stations.
   count(nyc_transit_df,ada) # 468 stations are ADA compliant.
-  nyc=filter(nyc_transit_df,vending=='NO') # station without vending allow entrance (entry/exit) 
-  nrow(nyc)/ nrow(nyc_transit_df) # the proportion = number of stations without vending allow entrance(entry/exit)/ total number of entrance/exit = 0.098
+  nyc=filter(nyc_transit_df,vending=='NO') # station without vending 
+  nycentry=filter(nyc,entry==TRUE) # station without vending allow entrance
+  nrow(nycentry)/nrow(nyc) # the proportion = number of stations without vending allow entrance/ total number of stations without vending = 0.377
   
   nyc_tidy_df= nyc_transit_df %>%
   mutate_at(vars(route1:route11),as.character) %>%
