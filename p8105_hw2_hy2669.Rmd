@@ -55,7 +55,6 @@ nyc_transit_df=read_csv('./data/problem2/NYC_Transit_Subway_Entrance_And_Exit_Da
 # This dataset contains information of stations including names,locations,routes they serve,entrance type, ADA compliance,entry and vending status. 
 # Data cleaning steps: read the data-clean the name-select columns to retain-convert the entry variable from character to logical.The resulting dataset has 19 colums and 1868 rows.
 # These data are not tidy since there are too many route columns, and route1:route7 are character variables while route8:route11 are numeric variables.
-  
   nyc_station<-distinct(nyc_transit_df,station_name,line) # get distinct stations based on name and line.
   nrow(nyc_station)# there are 465 distinct stations.
   count(nyc_transit_df,ada) # 468 stations are ADA compliant.
